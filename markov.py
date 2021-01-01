@@ -1,5 +1,7 @@
 import random
 import pretty_midi
+import numpy as np
+
 
 # markov chain
 # step 1 all the ngrams count all the following char for every ngram
@@ -13,8 +15,9 @@ import pretty_midi
 # step 1 and 2
 def gen_possiblities(text, order):
 	ngram_chars = {}
+	# text [2, 4, 1, 3]
 	for i in range(len(text) - order):
-		ngram = text[i:i+order]
+		ngram = tuple(text[i:i+order])
 
 		if ngram not in ngram_chars:
 			ngram_chars[ngram] = [text[i+order]]
@@ -25,6 +28,7 @@ def gen_possiblities(text, order):
 
 # generate
 def gen_sequence(order, ngram_chars, start_word, iterations):
+	result = list(start_word)
 	cur_word = start_word
 	for i in range(iterations):
 		if cur_word not in ngram_chars:
@@ -35,10 +39,10 @@ def gen_sequence(order, ngram_chars, start_word, iterations):
 			break
 		
 		char = random.choice(char_ls)
-		start_word += char
-		cur_word = start_word[-order:]
+		result.append(char)
+		cur_word = (cur_word[-1], char)
 
-	return start_word
+	return result
 
 
 def text_to_midi(text, bpm, output_path):
@@ -52,7 +56,7 @@ def text_to_midi(text, bpm, output_path):
 	start = 0
 	for num in text:
 
-		note_number = int(num) + 40
+		note_number = int(num) + 52
 		end = start + unit * sec_beat
 		print('start, end', start, end)
 		start = end
@@ -68,12 +72,17 @@ def text_to_midi(text, bpm, output_path):
 
 if __name__ == '__main__':
 	example = '0044007744774400'
+	major = [0, 2, 4, 7, 9]
+	example = random.choices(major, k=16)
+	print('example', example)
 	order = 2
 	ngram_chars = gen_possiblities(example, order)
-	start_word = '00'
-	result = gen_sequence(order, ngram_chars, start_word, 10)
-	print(result)
-	output_path = 'test_2.mid'
+	print(ngram_chars)
+	start_word = tuple(example[:2])
+	result = gen_sequence(order, ngram_chars, start_word, 16)
+	print('result', result)
+	output_path = 'result.mid'
+	text_to_midi(example, 60, 'example.mid')
 	text_to_midi(result, 60, output_path)
 
 
