@@ -31,7 +31,9 @@ def gen_sequence(order, ngram_chars, start_word, iterations):
 	result = list(start_word)
 	cur_word = start_word
 	for i in range(iterations):
+		print('cur_word', cur_word)
 		if cur_word not in ngram_chars:
+			print('Jo')
 			break
 		
 		char_ls = ngram_chars[cur_word]
@@ -40,7 +42,7 @@ def gen_sequence(order, ngram_chars, start_word, iterations):
 		
 		char = random.choice(char_ls)
 		result.append(char)
-		cur_word = (cur_word[-1], char)
+		cur_word = (char,)
 
 	return result
 
@@ -52,7 +54,7 @@ def text_to_midi(text, bpm, output_path):
 	guitar = pretty_midi.Instrument(program=guitar_program)
 	
 	sec_beat = 60 / bpm # beat -> sec
-	unit = 0.25 # the smallest unit is Sixteenth note, 1/4 beat
+	unit = 0.5 # the smallest unit is Sixteenth note, 1/4 beat
 	start = 0
 
 
@@ -61,20 +63,20 @@ def text_to_midi(text, bpm, output_path):
 		num = text[i]
 		dur = unit * sec_beat
 
-		if i + 1 < len(text):
-			while text[i] == text[i+1]:
+		# if i + 1 < len(text):
+		# 	while text[i] == text[i+1]:
 				
-				i += 1
-				dur += unit * sec_beat
-				if i >= len(text):
-					break
-		note_number = int(num) + 52
+		# 		i += 1
+		# 		dur += unit * sec_beat
+		# 		if i >= len(text):
+		# 			break
+		note_number = int(num) - 12 
 		end = start + dur
-
-		start = end
+		# print('start end', start, end)
 		note = pretty_midi.Note(
 			velocity=100, pitch=note_number, start=start, end=end)
 		guitar.notes.append(note)
+		start = end
 		i += 1
 
 	# Add the cello instrument to the PrettyMIDI object
@@ -84,17 +86,25 @@ def text_to_midi(text, bpm, output_path):
 
 
 if __name__ == '__main__':
-	major = [0, 2, 4, 7, 9]
-	example = random.choices(major, k=16)
+	# major = [0, 4, 7, 9]
+	# example = random.choices(major, k=16)
+	example = []
+	midi_data = pretty_midi.PrettyMIDI('twtw.mid')
+	for note in midi_data.instruments[0].notes:
+
+		example.append(note.pitch)
 	print('example', example)
-	order = 2
+
+	order = 1
 	ngram_chars = gen_possiblities(example, order)
 	print(ngram_chars)
-	start_word = tuple(example[:2])
+	
+	start_word = tuple(example[:order])
+	print('start_word',start_word)
 	result = gen_sequence(order, ngram_chars, start_word, 48)
 	print('result', result)
-	output_path = 'result.mid'
-	text_to_midi(example, 90, 'example.mid')
+	output_path = 'twtw_infer.mid'
+	text_to_midi(example, 90, 'twtw_truth.mid')
 	text_to_midi(result, 90, output_path)
 
 
