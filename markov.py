@@ -54,16 +54,29 @@ def text_to_midi(text, bpm, output_path):
 	sec_beat = 60 / bpm # beat -> sec
 	unit = 0.25 # the smallest unit is Sixteenth note, 1/4 beat
 	start = 0
-	for num in text:
 
+
+	i = 0
+	while i < len(text):
+		num = text[i]
+		dur = unit * sec_beat
+
+		if i + 1 < len(text):
+			while text[i] == text[i+1]:
+				
+				i += 1
+				dur += unit * sec_beat
+				if i >= len(text):
+					break
 		note_number = int(num) + 52
-		end = start + unit * sec_beat
-		print('start, end', start, end)
+		end = start + dur
+
 		start = end
 		note = pretty_midi.Note(
 			velocity=100, pitch=note_number, start=start, end=end)
 		guitar.notes.append(note)
-	
+		i += 1
+
 	# Add the cello instrument to the PrettyMIDI object
 	guitar_high.instruments.append(guitar)
 	# Write out the MIDI data
@@ -71,7 +84,6 @@ def text_to_midi(text, bpm, output_path):
 
 
 if __name__ == '__main__':
-	example = '0044007744774400'
 	major = [0, 2, 4, 7, 9]
 	example = random.choices(major, k=16)
 	print('example', example)
@@ -79,10 +91,10 @@ if __name__ == '__main__':
 	ngram_chars = gen_possiblities(example, order)
 	print(ngram_chars)
 	start_word = tuple(example[:2])
-	result = gen_sequence(order, ngram_chars, start_word, 16)
+	result = gen_sequence(order, ngram_chars, start_word, 48)
 	print('result', result)
 	output_path = 'result.mid'
-	text_to_midi(example, 60, 'example.mid')
-	text_to_midi(result, 60, output_path)
+	text_to_midi(example, 90, 'example.mid')
+	text_to_midi(result, 90, output_path)
 
 
